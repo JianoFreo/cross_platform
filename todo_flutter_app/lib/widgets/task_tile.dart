@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/task.dart';
-// Alias your utils import to avoid conflict
 import '../utils/date_utils.dart' as MyDateUtils;
 
 class TaskTile extends StatelessWidget {
@@ -31,7 +30,7 @@ class TaskTile extends StatelessWidget {
         ),
       ),
       subtitle: task.dueDate != null
-          ? Text('Due: ${MyDateUtils.DateUtils.formatDate(task.dueDate!)}')
+          ? Text('Due: ${MyDateUtils.DateUtils.formatDateTime(task.dueDate!)}')
           : null,
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
