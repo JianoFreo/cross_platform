@@ -3,7 +3,7 @@ import '../db/db_helper.dart';
 import '../models/task.dart';
 import '../widgets/task_tile.dart';
 import '../theme/app_theme.dart';
-import '../utils/date_utils.dart';
+import '../utils/date_utils.dart'; // Keep import the same
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -109,10 +109,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         itemCount: _tasks.length,
                         itemBuilder: (context, index) {
                           final task = _tasks[index];
-                          final createdAt = DateUtils.formatDateTime(task.createdAt);
+
+                          // Use MyDateUtils instead of DateUtils
+                          final createdAt =
+                              MyDateUtils.formatDateTime(task.createdAt);
                           final due = task.dueDate != null
-                              ? 'Due: ${DateUtils.formatDate(task.dueDate!)}'
+                              ? 'Due: ${MyDateUtils.formatDate(task.dueDate!)}'
                               : '';
+
                           return TaskTile(
                             task: task,
                             onToggle: (v) => _toggleTask(task, v),
