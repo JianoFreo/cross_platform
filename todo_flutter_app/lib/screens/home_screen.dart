@@ -78,76 +78,72 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: _isDarkMode ? AppTheme.darkTheme : AppTheme.lightTheme,
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Todo List'),
-          actions: [
-            IconButton(
-              icon: Icon(_isDarkMode ? Icons.light_mode : Icons.dark_mode),
-              onPressed: () => setState(() => _isDarkMode = !_isDarkMode),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Todo List'),
+        actions: [
+          IconButton(
+            icon: Icon(_isDarkMode ? Icons.light_mode : Icons.dark_mode),
+            onPressed: () => setState(() => _isDarkMode = !_isDarkMode),
+          ),
+        ],
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _controller,
+                      decoration: const InputDecoration(
+                        hintText: 'Add a task',
+                        border: OutlineInputBorder(),
+                      ),
+                      onSubmitted: (_) => _addTask(),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: _addTask,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _isDarkMode
+                          ? AppTheme.primaryColor
+                          : Colors.blueAccent,
+                    ),
+                    child: const Text(
+                      'Add',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            Expanded(
+              child: _tasks.isEmpty
+                  ? const Center(child: Text('No tasks yet'))
+                  : ListView.builder(
+                      itemCount: _tasks.length,
+                      itemBuilder: (context, index) {
+                        final task = _tasks[index];
+                        final createdAt =
+                            MyDateUtils.formatDateTime(task.createdAt);
+                        final due = task.dueDate != null
+                            ? 'Due: ${MyDateUtils.formatDate(task.dueDate!)}'
+                            : '';
+                        return TaskTile(
+                          task: task,
+                          onToggle: (v) => _toggleTask(task, v),
+                          onDelete: () => _deleteTask(task),
+                          subtitle: '$createdAt $due',
+                        );
+                      },
+                    ),
             ),
           ],
-        ),
-        body: SafeArea(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _controller,
-                        decoration: const InputDecoration(
-                          hintText: 'Add a task',
-                          border: OutlineInputBorder(),
-                        ),
-                        onSubmitted: (_) => _addTask(),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    ElevatedButton(
-                      onPressed: _addTask,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _isDarkMode
-                            ? AppTheme.primaryColor
-                            : Colors.blueAccent,
-                      ),
-                      child: const Text(
-                        'Add',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Divider(height: 1),
-              Expanded(
-                child: _tasks.isEmpty
-                    ? const Center(child: Text('No tasks yet'))
-                    : ListView.builder(
-                        itemCount: _tasks.length,
-                        itemBuilder: (context, index) {
-                          final task = _tasks[index];
-                          final createdAt =
-                              MyDateUtils.formatDateTime(task.createdAt);
-                          final due = task.dueDate != null
-                              ? 'Due: ${MyDateUtils.formatDate(task.dueDate!)}'
-                              : '';
-                          return TaskTile(
-                            task: task,
-                            onToggle: (v) => _toggleTask(task, v),
-                            onDelete: () => _deleteTask(task),
-                            subtitle: '$createdAt $due',
-                          );
-                        },
-                      ),
-              ),
-            ],
-          ),
         ),
       ),
     );

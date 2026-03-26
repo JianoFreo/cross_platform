@@ -5,13 +5,17 @@ class AppTheme {
 
   static final ThemeData lightTheme = ThemeData(
     useMaterial3: true,
-    colorScheme: ColorScheme.fromSeed(seedColor: primaryColor),
-    brightness: Brightness.light,
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: primaryColor,
+      brightness: Brightness.light, // brightness defined here only
+    ),
   );
 
   static final ThemeData darkTheme = ThemeData(
     useMaterial3: true,
-    colorScheme: ColorScheme.fromSeed(seedColor: primaryColor),
-    brightness: Brightness.dark,
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: primaryColor,
+      brightness: Brightness.dark, // brightness defined here only
+    ),
   );
 }

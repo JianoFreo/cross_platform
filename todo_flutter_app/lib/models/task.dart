@@ -1,6 +1,12 @@
 import 'dart:convert';
 
 class Task {
+  final String id;
+  final String title;
+  final bool isDone;
+  final DateTime createdAt;
+  final DateTime? dueDate;
+
   Task({
     required this.id,
     required this.title,
@@ -8,12 +14,6 @@ class Task {
     this.isDone = false,
     this.dueDate,
   });
-
-  final String id;
-  final String title;
-  final bool isDone;
-  final DateTime createdAt;
-  final DateTime? dueDate;
 
   Task copyWith({String? title, bool? isDone, DateTime? dueDate}) {
     return Task(
@@ -29,7 +29,7 @@ class Task {
     return {
       'id': id,
       'title': title,
-      'isDone': isDone ? 1 : 0,
+      'isDone': isDone,
       'createdAt': createdAt.toIso8601String(),
       'dueDate': dueDate?.toIso8601String(),
     };
@@ -39,9 +39,18 @@ class Task {
     return Task(
       id: map['id'],
       title: map['title'],
-      isDone: map['isDone'] == 1,
+      isDone: map['isDone'] ?? false,
       createdAt: DateTime.parse(map['createdAt']),
       dueDate: map['dueDate'] != null ? DateTime.parse(map['dueDate']) : null,
     );
+  }
+
+  static String encodeList(List<Task> tasks) =>
+      jsonEncode(tasks.map((t) => t.toMap()).toList());
+
+  static List<Task> decodeList(String raw) {
+    if (raw.isEmpty) return [];
+    final List<dynamic> decoded = jsonDecode(raw);
+    return decoded.map((e) => Task.fromMap(Map<String, dynamic>.from(e))).toList();
   }
 }

@@ -1,56 +1,22 @@
-import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'screens/home_screen.dart';
+import 'theme/app_theme.dart';
 
-class Task {
-  final String id;
-  final String title;
-  final bool isDone;
-  final DateTime createdAt;
-  final DateTime? dueDate;
+void main() {
+  runApp(const TodoApp());
+}
 
-  Task({
-    required this.id,
-    required this.title,
-    required this.createdAt,
-    this.isDone = false,
-    this.dueDate,
-  });
+class TodoApp extends StatelessWidget {
+  const TodoApp({super.key});
 
-  Task copyWith({String? title, bool? isDone, DateTime? dueDate}) {
-    return Task(
-      id: id,
-      title: title ?? this.title,
-      isDone: isDone ?? this.isDone,
-      createdAt: createdAt,
-      dueDate: dueDate ?? this.dueDate,
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Todo List',
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      home: const HomeScreen(),
     );
-  }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'title': title,
-      'isDone': isDone,
-      'createdAt': createdAt.toIso8601String(),
-      'dueDate': dueDate?.toIso8601String(),
-    };
-  }
-
-  static Task fromMap(Map<String, dynamic> map) {
-    return Task(
-      id: map['id'],
-      title: map['title'],
-      isDone: map['isDone'] ?? false,
-      createdAt: DateTime.parse(map['createdAt']),
-      dueDate: map['dueDate'] != null ? DateTime.parse(map['dueDate']) : null,
-    );
-  }
-
-  static String encodeList(List<Task> tasks) =>
-      jsonEncode(tasks.map((t) => t.toMap()).toList());
-
-  static List<Task> decodeList(String raw) {
-    if (raw.isEmpty) return [];
-    final List<dynamic> decoded = jsonDecode(raw);
-    return decoded.map((e) => Task.fromMap(Map<String, dynamic>.from(e))).toList();
   }
 }
