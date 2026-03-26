@@ -1,6 +1,16 @@
-todo_flutter = provided version
+## Before performing flutter run, you have to specify your directory first because there are two versions
 
-todo_flutter_app = my upgraded version
+The provided version:
+
+``
+cd 'todo_flutter'
+``
+
+my own version:
+
+``
+cd 'todo_flutter_app'
+``
 
 # Scheduling feature
 
