@@ -6,56 +6,42 @@ class Task {
     required this.title,
     required this.createdAt,
     this.isDone = false,
+    this.dueDate,
   });
 
   final String id;
   final String title;
   final bool isDone;
   final DateTime createdAt;
+  final DateTime? dueDate;
 
-  Task copyWith({
-    String? title,
-    bool? isDone,
-  }) {
+  Task copyWith({String? title, bool? isDone, DateTime? dueDate}) {
     return Task(
       id: id,
       title: title ?? this.title,
       isDone: isDone ?? this.isDone,
       createdAt: createdAt,
+      dueDate: dueDate ?? this.dueDate,
     );
   }
 
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{
+    return {
       'id': id,
       'title': title,
-      'isDone': isDone,
+      'isDone': isDone ? 1 : 0,
       'createdAt': createdAt.toIso8601String(),
+      'dueDate': dueDate?.toIso8601String(),
     };
   }
 
   static Task fromMap(Map<String, dynamic> map) {
     return Task(
-      id: map['id'] as String,
-      title: map['title'] as String,
-      isDone: (map['isDone'] as bool?) ?? false,
-      createdAt: DateTime.parse(map['createdAt'] as String),
+      id: map['id'],
+      title: map['title'],
+      isDone: map['isDone'] == 1,
+      createdAt: DateTime.parse(map['createdAt']),
+      dueDate: map['dueDate'] != null ? DateTime.parse(map['dueDate']) : null,
     );
-  }
-
-  static String encodeList(List<Task> tasks) {
-    return jsonEncode(tasks.map((t) => t.toMap()).toList());
-  }
-
-  static List<Task> decodeList(String raw) {
-    final decoded = jsonDecode(raw);
-    if (decoded is! List) return <Task>[];
-
-    return decoded
-        .whereType<Object?>()
-        .map((e) => e is Map ? Map<String, dynamic>.from(e) : null)
-        .whereType<Map<String, dynamic>>()
-        .map(Task.fromMap)
-        .toList(growable: false);
   }
 }

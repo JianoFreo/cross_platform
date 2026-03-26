@@ -1,6 +1,3 @@
-//required attributes
-//add calendar
-//add SQLite database system
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 
@@ -13,16 +10,6 @@ class TodoApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Tasks',
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF4F46E5),
-        ),
-      ),
-      home: const HomeScreen(),
-    );
+    return const HomeScreen();
   }
 }
