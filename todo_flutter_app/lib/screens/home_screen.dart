@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../models/task.dart';
 import '../widgets/task_tile.dart';
-// Alias your utils import to avoid conflict with Flutter's DateUtils
+import '../screens/calendar_screen.dart';
+import '../theme/app_theme.dart';
 import '../utils/date_utils.dart' as MyDateUtils;
-import '../theme/app_theme.dart'; // <--- ADD THIS
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({
@@ -62,10 +62,28 @@ class _HomeScreenState extends State<HomeScreen> {
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
+
     if (selectedDate != null) {
-      setState(() {
-        _tasks[index] = _tasks[index].copyWith(dueDate: selectedDate);
-      });
+      final selectedTime = await showTimePicker(
+        context: context,
+        initialTime: _tasks[index].dueDate != null
+            ? TimeOfDay.fromDateTime(_tasks[index].dueDate!)
+            : TimeOfDay.now(),
+      );
+
+      if (selectedTime != null) {
+        setState(() {
+          _tasks[index] = _tasks[index].copyWith(
+            dueDate: DateTime(
+              selectedDate.year,
+              selectedDate.month,
+              selectedDate.day,
+              selectedTime.hour,
+              selectedTime.minute,
+            ),
+          );
+        });
+      }
     }
   }
 
@@ -75,9 +93,26 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text('Todo List'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.calendar_month),
+            tooltip: 'View Calendar',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => CalendarScreen(tasks: _tasks),
+                ),
+              );
+            },
+          ),
           PopupMenuButton<String>(
             onSelected: widget.onThemeChange,
-            itemBuilder: (_) => MyDateUtilsAppThemeFix(), // FIXED BELOW
+            itemBuilder: (_) => AppTheme.themes.keys
+                .map((theme) => PopupMenuItem(
+                      value: theme,
+                      child: Text(theme),
+                    ))
+                .toList(),
           ),
         ],
       ),
@@ -126,14 +161,4 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-}
-
-// Helper for theme selection menu
-List<PopupMenuEntry<String>> MyDateUtilsAppThemeFix() {
-  return AppTheme.themes.keys
-      .map((theme) => PopupMenuItem(
-            value: theme,
-            child: Text(theme),
-          ))
-      .toList();
 }
