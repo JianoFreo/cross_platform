@@ -5,6 +5,7 @@ class TaskTile extends StatelessWidget {
   final Task task;
   final ValueChanged<bool> onToggle;
   final VoidCallback onDelete;
+  final VoidCallback? onEdit;
   final String? subtitle;
 
   const TaskTile({
@@ -12,6 +13,7 @@ class TaskTile extends StatelessWidget {
     required this.task,
     required this.onToggle,
     required this.onDelete,
+    this.onEdit,
     this.subtitle,
   });
 
@@ -29,10 +31,21 @@ class TaskTile extends StatelessWidget {
         ),
       ),
       subtitle: subtitle != null ? Text(subtitle!) : null,
-      trailing: IconButton(
-        icon: const Icon(Icons.delete),
-        tooltip: 'Delete',
-        onPressed: onDelete,
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (onEdit != null)
+            IconButton(
+              icon: const Icon(Icons.calendar_today),
+              tooltip: 'Edit Due Date',
+              onPressed: onEdit,
+            ),
+          IconButton(
+            icon: const Icon(Icons.delete),
+            tooltip: 'Delete',
+            onPressed: onDelete,
+          ),
+        ],
       ),
       onTap: () => onToggle(!task.isDone),
     );

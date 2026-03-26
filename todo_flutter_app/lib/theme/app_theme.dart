@@ -1,21 +1,50 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  static const Color primaryColor = Color(0xFF4F46E5);
-
-  static final ThemeData lightTheme = ThemeData(
-    useMaterial3: true,
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: primaryColor,
-      brightness: Brightness.light, // brightness defined here only
+  static final Map<String, ThemeData> themes = {
+    'Blue': ThemeData(
+      useMaterial3: true,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: Colors.blue,
+        brightness: Brightness.light,
+      ),
+      textTheme: const TextTheme(bodyLarge: TextStyle(color: Colors.white)),
     ),
-  );
-
-  static final ThemeData darkTheme = ThemeData(
-    useMaterial3: true,
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: primaryColor,
-      brightness: Brightness.dark, // brightness defined here only
+    'Green': ThemeData(
+      useMaterial3: true,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: Colors.green,
+        brightness: Brightness.light,
+      ),
     ),
-  );
+    'Yellow': ThemeData(
+      useMaterial3: true,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: Colors.yellow,
+        brightness: Brightness.light,
+        onPrimary: Colors.black,
+      ),
+    ),
+    'Red': ThemeData(
+      useMaterial3: true,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: Colors.red,
+        brightness: Brightness.light,
+      ),
+    ),
+    'Brown': ThemeData(
+      useMaterial3: true,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: Colors.brown,
+        brightness: Brightness.light,
+      ),
+    ),
+    'Dark': ThemeData(
+      useMaterial3: true,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: Colors.grey.shade900,
+        brightness: Brightness.dark,
+      ),
+    ),
+  };
 }

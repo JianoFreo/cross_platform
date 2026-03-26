@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/task.dart';
 import '../widgets/task_tile.dart';
-import '../theme/app_theme.dart';
 import '../utils/date_utils.dart';
 
+typedef ThemeCallback = void Function(String themeName);
+
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final ThemeCallback? onThemeChange;
+  const HomeScreen({super.key, this.onThemeChange});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -15,7 +17,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _controller = TextEditingController();
   List<Task> _tasks = [];
-  bool _isDarkMode = false;
+  String _currentTheme = 'Blue';
 
   @override
   void initState() {
@@ -38,18 +40,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
 
-    DateTime? dueDate = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2100),
-    );
-
     final task = Task(
       id: DateTime.now().microsecondsSinceEpoch.toString(),
       title: text,
       createdAt: DateTime.now(),
-      dueDate: dueDate,
     );
 
     setState(() {
@@ -60,20 +54,41 @@ class _HomeScreenState extends State<HomeScreen> {
     await _saveTasks();
   }
 
-  Future<void> _toggleTask(Task task, bool value) async {
-    final updatedTask = task.copyWith(isDone: value);
+  Future<void> _editTaskDueDate(Task task) async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: task.dueDate ?? DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2100),
+    );
+    if (picked == null) return;
+
+    final updated = task.copyWith(dueDate: picked);
     setState(() {
       final index = _tasks.indexWhere((t) => t.id == task.id);
-      if (index != -1) _tasks[index] = updatedTask;
+      if (index != -1) _tasks[index] = updated;
+    });
+
+    await _saveTasks();
+  }
+
+  Future<void> _toggleTask(Task task, bool value) async {
+    final updated = task.copyWith(isDone: value);
+    setState(() {
+      final index = _tasks.indexWhere((t) => t.id == task.id);
+      if (index != -1) _tasks[index] = updated;
     });
     await _saveTasks();
   }
 
   Future<void> _deleteTask(Task task) async {
-    setState(() {
-      _tasks.removeWhere((t) => t.id == task.id);
-    });
+    setState(() => _tasks.removeWhere((t) => t.id == task.id));
     await _saveTasks();
+  }
+
+  void _changeTheme(String theme) {
+    setState(() => _currentTheme = theme);
+    if (widget.onThemeChange != null) widget.onThemeChange!(theme);
   }
 
   @override
@@ -82,9 +97,15 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text('Todo List'),
         actions: [
-          IconButton(
-            icon: Icon(_isDarkMode ? Icons.light_mode : Icons.dark_mode),
-            onPressed: () => setState(() => _isDarkMode = !_isDarkMode),
+          PopupMenuButton<String>(
+            onSelected: _changeTheme,
+            itemBuilder: (context) => [
+              'Blue', 'Green', 'Yellow', 'Red', 'Brown', 'Dark'
+            ].map((theme) => PopupMenuItem(
+              value: theme,
+              child: Text(theme),
+            )).toList(),
+            icon: const Icon(Icons.palette),
           ),
         ],
       ),
@@ -108,15 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(width: 8),
                   ElevatedButton(
                     onPressed: _addTask,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _isDarkMode
-                          ? AppTheme.primaryColor
-                          : Colors.blueAccent,
-                    ),
-                    child: const Text(
-                      'Add',
-                      style: TextStyle(color: Colors.white),
-                    ),
+                    child: const Text('Add'),
                   ),
                 ],
               ),
@@ -129,8 +142,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       itemCount: _tasks.length,
                       itemBuilder: (context, index) {
                         final task = _tasks[index];
-                        final createdAt =
-                            MyDateUtils.formatDateTime(task.createdAt);
+                        final createdAt = MyDateUtils.formatDateTime(task.createdAt);
                         final due = task.dueDate != null
                             ? 'Due: ${MyDateUtils.formatDate(task.dueDate!)}'
                             : '';
@@ -138,6 +150,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           task: task,
                           onToggle: (v) => _toggleTask(task, v),
                           onDelete: () => _deleteTask(task),
+                          onEdit: () => _editTaskDueDate(task),
                           subtitle: '$createdAt $due',
                         );
                       },

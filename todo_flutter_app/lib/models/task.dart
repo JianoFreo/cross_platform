@@ -25,25 +25,21 @@ class Task {
     );
   }
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'title': title,
-      'isDone': isDone,
-      'createdAt': createdAt.toIso8601String(),
-      'dueDate': dueDate?.toIso8601String(),
-    };
-  }
+  Map<String, dynamic> toMap() => {
+        'id': id,
+        'title': title,
+        'isDone': isDone,
+        'createdAt': createdAt.toIso8601String(),
+        'dueDate': dueDate?.toIso8601String(),
+      };
 
-  static Task fromMap(Map<String, dynamic> map) {
-    return Task(
-      id: map['id'],
-      title: map['title'],
-      isDone: map['isDone'] ?? false,
-      createdAt: DateTime.parse(map['createdAt']),
-      dueDate: map['dueDate'] != null ? DateTime.parse(map['dueDate']) : null,
-    );
-  }
+  static Task fromMap(Map<String, dynamic> map) => Task(
+        id: map['id'],
+        title: map['title'],
+        isDone: map['isDone'] ?? false,
+        createdAt: DateTime.parse(map['createdAt']),
+        dueDate: map['dueDate'] != null ? DateTime.parse(map['dueDate']) : null,
+      );
 
   static String encodeList(List<Task> tasks) =>
       jsonEncode(tasks.map((t) => t.toMap()).toList());

@@ -6,17 +6,29 @@ void main() {
   runApp(const TodoApp());
 }
 
-class TodoApp extends StatelessWidget {
+class TodoApp extends StatefulWidget {
   const TodoApp({super.key});
+
+  @override
+  State<TodoApp> createState() => _TodoAppState();
+}
+
+class _TodoAppState extends State<TodoApp> {
+  ThemeData _currentTheme = AppTheme.themes['Blue']!;
+
+  void updateTheme(String themeName) {
+    setState(() {
+      _currentTheme = AppTheme.themes[themeName]!;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Todo List',
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      home: const HomeScreen(),
+      theme: _currentTheme,
+      home: HomeScreen(onThemeChange: updateTheme),
     );
   }
 }
