@@ -1,94 +1,72 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../models/task.dart';
 import '../widgets/task_tile.dart';
-import '../utils/date_utils.dart';
-
-typedef ThemeCallback = void Function(String themeName);
+// Alias your utils import to avoid conflict with Flutter's DateUtils
+import '../utils/date_utils.dart' as MyDateUtils;
+import '../theme/app_theme.dart'; // <--- ADD THIS
 
 class HomeScreen extends StatefulWidget {
-  final ThemeCallback? onThemeChange;
-  const HomeScreen({super.key, this.onThemeChange});
+  const HomeScreen({
+    super.key,
+    required this.currentTheme,
+    required this.onThemeChange,
+  });
+
+  final String currentTheme;
+  final ValueChanged<String> onThemeChange;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final List<Task> _tasks = [];
   final TextEditingController _controller = TextEditingController();
-  List<Task> _tasks = [];
-  String _currentTheme = 'Blue';
 
   @override
-  void initState() {
-    super.initState();
-    _loadTasks();
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
-  Future<void> _loadTasks() async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString('tasks') ?? '';
-    setState(() => _tasks = Task.decodeList(raw));
-  }
-
-  Future<void> _saveTasks() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('tasks', Task.encodeList(_tasks));
-  }
-
-  Future<void> _addTask() async {
+  void _addTask() {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
 
-    final task = Task(
-      id: DateTime.now().microsecondsSinceEpoch.toString(),
-      title: text,
-      createdAt: DateTime.now(),
-    );
-
     setState(() {
-      _tasks.insert(0, task);
+      _tasks.add(Task(
+        id: DateTime.now().microsecondsSinceEpoch.toString(),
+        title: text,
+        createdAt: DateTime.now(),
+      ));
       _controller.clear();
     });
-
-    await _saveTasks();
   }
 
-  Future<void> _editTaskDueDate(Task task) async {
-    final picked = await showDatePicker(
+  void _toggle(int index, bool value) {
+    setState(() {
+      _tasks[index] = _tasks[index].copyWith(isDone: value);
+    });
+  }
+
+  void _delete(int index) {
+    setState(() {
+      _tasks.removeAt(index);
+    });
+  }
+
+  void _editDueDate(int index) async {
+    final selectedDate = await showDatePicker(
       context: context,
-      initialDate: task.dueDate ?? DateTime.now(),
-      firstDate: DateTime.now(),
+      initialDate: _tasks[index].dueDate ?? DateTime.now(),
+      firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
-    if (picked == null) return;
-
-    final updated = task.copyWith(dueDate: picked);
-    setState(() {
-      final index = _tasks.indexWhere((t) => t.id == task.id);
-      if (index != -1) _tasks[index] = updated;
-    });
-
-    await _saveTasks();
-  }
-
-  Future<void> _toggleTask(Task task, bool value) async {
-    final updated = task.copyWith(isDone: value);
-    setState(() {
-      final index = _tasks.indexWhere((t) => t.id == task.id);
-      if (index != -1) _tasks[index] = updated;
-    });
-    await _saveTasks();
-  }
-
-  Future<void> _deleteTask(Task task) async {
-    setState(() => _tasks.removeWhere((t) => t.id == task.id));
-    await _saveTasks();
-  }
-
-  void _changeTheme(String theme) {
-    setState(() => _currentTheme = theme);
-    if (widget.onThemeChange != null) widget.onThemeChange!(theme);
+    if (selectedDate != null) {
+      setState(() {
+        _tasks[index] = _tasks[index].copyWith(dueDate: selectedDate);
+      });
+    }
   }
 
   @override
@@ -98,67 +76,64 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('Todo List'),
         actions: [
           PopupMenuButton<String>(
-            onSelected: _changeTheme,
-            itemBuilder: (context) => [
-              'Blue', 'Green', 'Yellow', 'Red', 'Brown', 'Dark'
-            ].map((theme) => PopupMenuItem(
-              value: theme,
-              child: Text(theme),
-            )).toList(),
-            icon: const Icon(Icons.palette),
+            onSelected: widget.onThemeChange,
+            itemBuilder: (_) => MyDateUtilsAppThemeFix(), // FIXED BELOW
           ),
         ],
       ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _controller,
-                      decoration: const InputDecoration(
-                        hintText: 'Add a task',
-                        border: OutlineInputBorder(),
-                      ),
-                      onSubmitted: (_) => _addTask(),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    decoration: const InputDecoration(
+                      hintText: 'Add a task',
+                      border: OutlineInputBorder(),
                     ),
+                    onSubmitted: (_) => _addTask(),
                   ),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: _addTask,
-                    child: const Text('Add'),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: _addTask,
+                  child: const Text('Add'),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          Expanded(
+            child: _tasks.isEmpty
+                ? const Center(child: Text('No tasks yet'))
+                : ListView.builder(
+                    itemCount: _tasks.length,
+                    itemBuilder: (context, index) {
+                      final task = _tasks[index];
+                      return TaskTile(
+                        task: task,
+                        onToggle: (v) => _toggle(index, v),
+                        onDelete: () => _delete(index),
+                        onEdit: () => _editDueDate(index),
+                      );
+                    },
                   ),
-                ],
-              ),
-            ),
-            const Divider(height: 1),
-            Expanded(
-              child: _tasks.isEmpty
-                  ? const Center(child: Text('No tasks yet'))
-                  : ListView.builder(
-                      itemCount: _tasks.length,
-                      itemBuilder: (context, index) {
-                        final task = _tasks[index];
-                        final createdAt = MyDateUtils.formatDateTime(task.createdAt);
-                        final due = task.dueDate != null
-                            ? 'Due: ${MyDateUtils.formatDate(task.dueDate!)}'
-                            : '';
-                        return TaskTile(
-                          task: task,
-                          onToggle: (v) => _toggleTask(task, v),
-                          onDelete: () => _deleteTask(task),
-                          onEdit: () => _editTaskDueDate(task),
-                          subtitle: '$createdAt $due',
-                        );
-                      },
-                    ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
+}
+
+// Helper for theme selection menu
+List<PopupMenuEntry<String>> MyDateUtilsAppThemeFix() {
+  return AppTheme.themes.keys
+      .map((theme) => PopupMenuItem(
+            value: theme,
+            child: Text(theme),
+          ))
+      .toList();
 }

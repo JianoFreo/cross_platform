@@ -14,11 +14,11 @@ class TodoApp extends StatefulWidget {
 }
 
 class _TodoAppState extends State<TodoApp> {
-  ThemeData _currentTheme = AppTheme.themes['Blue']!;
+  String currentTheme = 'Blue';
 
-  void updateTheme(String themeName) {
+  void switchTheme(String theme) {
     setState(() {
-      _currentTheme = AppTheme.themes[themeName]!;
+      currentTheme = theme;
     });
   }
 
@@ -26,9 +26,12 @@ class _TodoAppState extends State<TodoApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Todo List',
-      theme: _currentTheme,
-      home: HomeScreen(onThemeChange: updateTheme),
+      title: 'Todo App',
+      theme: AppTheme.themes[currentTheme],
+      home: HomeScreen(
+        currentTheme: currentTheme,
+        onThemeChange: switchTheme,
+      ),
     );
   }
 }

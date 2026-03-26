@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import '../models/task.dart';
+// Alias your utils import to avoid conflict
+import '../utils/date_utils.dart' as MyDateUtils;
 
 class TaskTile extends StatelessWidget {
-  final Task task;
-  final ValueChanged<bool> onToggle;
-  final VoidCallback onDelete;
-  final VoidCallback? onEdit;
-  final String? subtitle;
-
   const TaskTile({
     super.key,
     required this.task,
     required this.onToggle,
     required this.onDelete,
-    this.onEdit,
-    this.subtitle,
+    required this.onEdit,
   });
+
+  final Task task;
+  final ValueChanged<bool> onToggle;
+  final VoidCallback onDelete;
+  final VoidCallback onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -30,19 +30,20 @@ class TaskTile extends StatelessWidget {
           decoration: task.isDone ? TextDecoration.lineThrough : null,
         ),
       ),
-      subtitle: subtitle != null ? Text(subtitle!) : null,
+      subtitle: task.dueDate != null
+          ? Text('Due: ${MyDateUtils.DateUtils.formatDate(task.dueDate!)}')
+          : null,
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (onEdit != null)
-            IconButton(
-              icon: const Icon(Icons.calendar_today),
-              tooltip: 'Edit Due Date',
-              onPressed: onEdit,
-            ),
           IconButton(
-            icon: const Icon(Icons.delete),
+            tooltip: 'Edit Due Date',
+            icon: const Icon(Icons.calendar_today),
+            onPressed: onEdit,
+          ),
+          IconButton(
             tooltip: 'Delete',
+            icon: const Icon(Icons.delete),
             onPressed: onDelete,
           ),
         ],

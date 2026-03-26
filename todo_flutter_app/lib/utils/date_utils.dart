@@ -1,15 +1,9 @@
-import 'package:intl/intl.dart';
-
-class MyDateUtils {
-  static String formatDateTime(DateTime date) {
-    return DateFormat.yMd().add_jm().format(date);
-  }
-
+class DateUtils {
   static String formatDate(DateTime date) {
-    return DateFormat.yMd().format(date);
+    return '${date.year}-${date.month.toString().padLeft(2,'0')}-${date.day.toString().padLeft(2,'0')}';
   }
 
-  static String formatTime(DateTime date) {
-    return DateFormat.jm().format(date);
+  static String formatDateTime(DateTime date) {
+    return '${formatDate(date)} ${date.hour.toString().padLeft(2,'0')}:${date.minute.toString().padLeft(2,'0')}';
   }
 }
