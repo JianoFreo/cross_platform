@@ -4,8 +4,19 @@ todo_flutter_app = my upgraded version
 
 # Scheduling feature
 
-![alt text](image.png)
+<table>
+<tr>
+<td align="center">
+<img src="assets/Screenshot 2026-03-26 015350.png">
+</td>
+<td align="center">
+
+<img src="assets/image.png">
+
+</td>
+</tr>
+</table>
 
 # Calendar Management
 
-![alt text](image-1.png)
+<img src="assets/image-2.png">
