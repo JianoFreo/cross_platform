@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../db/db_helper.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/task.dart';
 import '../widgets/task_tile.dart';
 import '../theme/app_theme.dart';
-import '../utils/date_utils.dart'; // Keep import the same
+import '../utils/date_utils.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -24,12 +24,19 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadTasks() async {
-    final tasks = await DBHelper.getTasks();
-    setState(() => _tasks = tasks);
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString('tasks') ?? '';
+    setState(() => _tasks = Task.decodeList(raw));
+  }
+
+  Future<void> _saveTasks() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('tasks', Task.encodeList(_tasks));
   }
 
   Future<void> _addTask() async {
-    if (_controller.text.trim().isEmpty) return;
+    final text = _controller.text.trim();
+    if (text.isEmpty) return;
 
     DateTime? dueDate = await showDatePicker(
       context: context,
@@ -40,25 +47,33 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final task = Task(
       id: DateTime.now().microsecondsSinceEpoch.toString(),
-      title: _controller.text.trim(),
+      title: text,
       createdAt: DateTime.now(),
       dueDate: dueDate,
     );
 
-    await DBHelper.insertTask(task);
-    _controller.clear();
-    _loadTasks();
+    setState(() {
+      _tasks.insert(0, task);
+      _controller.clear();
+    });
+
+    await _saveTasks();
   }
 
   Future<void> _toggleTask(Task task, bool value) async {
     final updatedTask = task.copyWith(isDone: value);
-    await DBHelper.updateTask(updatedTask);
-    _loadTasks();
+    setState(() {
+      final index = _tasks.indexWhere((t) => t.id == task.id);
+      if (index != -1) _tasks[index] = updatedTask;
+    });
+    await _saveTasks();
   }
 
-  Future<void> _deleteTask(String id) async {
-    await DBHelper.deleteTask(id);
-    _loadTasks();
+  Future<void> _deleteTask(Task task) async {
+    setState(() {
+      _tasks.removeWhere((t) => t.id == task.id);
+    });
+    await _saveTasks();
   }
 
   @override
@@ -96,7 +111,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(width: 8),
                     ElevatedButton(
                       onPressed: _addTask,
-                      child: const Text('Add'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _isDarkMode
+                            ? AppTheme.primaryColor
+                            : Colors.blueAccent,
+                      ),
+                      child: const Text(
+                        'Add',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   ],
                 ),
@@ -109,18 +132,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         itemCount: _tasks.length,
                         itemBuilder: (context, index) {
                           final task = _tasks[index];
-
-                          // Use MyDateUtils instead of DateUtils
                           final createdAt =
                               MyDateUtils.formatDateTime(task.createdAt);
                           final due = task.dueDate != null
                               ? 'Due: ${MyDateUtils.formatDate(task.dueDate!)}'
                               : '';
-
                           return TaskTile(
                             task: task,
                             onToggle: (v) => _toggleTask(task, v),
-                            onDelete: () => _deleteTask(task.id),
+                            onDelete: () => _deleteTask(task),
                             subtitle: '$createdAt $due',
                           );
                         },
